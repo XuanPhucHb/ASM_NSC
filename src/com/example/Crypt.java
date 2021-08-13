@@ -10,10 +10,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Crypt {
+    static Map<String, Object> keys;
+
+    static {
+        try {
+            keys = getRSAKeys();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static PublicKey publicKey = (PublicKey) keys.get("public");
+
     public static void main(String[] args) throws Exception {
         String plainText = "Hello World!";
-
-        Map<String, Object> keys = getRSAKeys();
 
         PrivateKey privateKey = (PrivateKey) keys.get("private");
         PublicKey publicKey = (PublicKey) keys.get("public");

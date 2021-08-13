@@ -21,8 +21,7 @@ public class Client {
         DataInputStream dataInputStream = null;
         DataOutputStream dataOutputStream = null;
         BufferedReader bufferReader = null;
-        Map<String, Object> keys = getRSAKeys();
-        privateKey = (PrivateKey) keys.get("private");
+        privateKey = (PrivateKey) Crypt.keys.get("private");
 
         try {
             socket = new Socket("localhost", 8088);
@@ -36,10 +35,12 @@ public class Client {
             String strFromServer = "", strToClient = "";
             while (!strFromServer.equals("exit")) {
                 strFromServer = bufferReader.readLine();
-                dataOutputStream.writeUTF(strFromServer);
+                String encryptedText = encryptMessage(strFromServer, privateKey);
+                dataOutputStream.writeUTF(encryptedText);
                 dataOutputStream.flush();
                 strToClient = dataInputStream.readUTF();
-                System.out.println("Server said: " + strToClient);
+                String descryptedText = decryptMessage(strToClient, Crypt.publicKey);
+                System.out.println("Server said: " + descryptedText);
             }
 
         } catch (Exception exe) {
@@ -84,5 +85,10 @@ public class Client {
         keys.put("private", privateKey);
         keys.put("public", publicKey);
         return keys;
+    }
+    private static String decryptMessage(String encryptedText, PublicKey publicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, publicKey);
+        return new String(cipher.doFinal(Base64.getDecoder().decode(encryptedText)));
     }
 }
